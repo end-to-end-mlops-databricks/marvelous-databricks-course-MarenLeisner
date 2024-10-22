@@ -1,0 +1,12 @@
+catalog_name: samples
+schema_name: nyctaxi
+table_name: trips
+
+num_features:
+  - trip_distance
+
+cat_features:
+  - pickup_zip
+  - dropoff_zip
+
+target: fare_amount
