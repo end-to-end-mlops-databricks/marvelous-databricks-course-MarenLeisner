@@ -8,14 +8,14 @@ from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 
 class DataProcessor:
-    def __init__(self, sparksession ,table, config):
-        self.df = self.load_data( sparksession,table)
+    def __init__(self, sparksession, table, config):
+        self.df = self.load_data(sparksession, table)
         self.config = config
         self.X = None
         self.y = None
         self.preprocessor = None
     
-    def load_data(self, sparksession: "SparkSession", table: str) -> pd.DataFrame:
+    def load_data(self, sparksession, table: str) -> pd.DataFrame:
         """Load data from Spark table into pandas DataFrame.
         
         Args:
