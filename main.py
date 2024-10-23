@@ -17,10 +17,14 @@ print(yaml.dump(config, default_flow_style=False))
 spark = DatabricksSession.builder.profile(config['databricks']['profile_id']).getOrCreate()
 path = config['data']['input_path']
 
-# Initialize DataProcessor
-data_processor = DataProcessor(spark, path, config)
-logger.info("DataProcessor initialized.")
+try:
+    # Initialize DataProcessor
+    data_processor = DataProcessor(spark, path, config)
+    logger.info("DataProcessor initialized.")
 
-# Preprocess the data
-data_processor.preprocess_data()
-logger.info("Data preprocessed.")
+    # Preprocess the data
+    data_processor.preprocess_data()
+    logger.info("Data preprocessed successfully")
+except Exception as e:
+    logger.error("Error during data processing: %s", str(e))
+    raise
