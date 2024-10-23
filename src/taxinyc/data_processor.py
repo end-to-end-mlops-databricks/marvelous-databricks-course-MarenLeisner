@@ -15,9 +15,25 @@ class DataProcessor:
         self.y = None
         self.preprocessor = None
     
-    def load_data(self, table, sparksession):
-        return sparksession.read.table(table).toPandas()
-
+    def load_data(self, sparksession: "SparkSession", table: str) -> pd.DataFrame:
+        """Load data from Spark table into pandas DataFrame.
+        
+        Args:
+            sparksession: Active Spark session
+            table: Name of the table to load
+            
+        Returns:
+            pd.DataFrame: Loaded data
+            
+        Raises:
+            ValueError: If sparksession is not active or table doesn't exist
+        """
+        if not sparksession or not sparksession.sparkContext:
+            raise ValueError("Invalid or inactive Spark session")
+        try:
+            return sparksession.read.table(table).toPandas()
+        except Exception as e:
+            raise ValueError(f"Failed to load table {table}: {str(e)}")
     def preprocess_data(self):
         # Remove rows with missing target
         target = self.config['target']
