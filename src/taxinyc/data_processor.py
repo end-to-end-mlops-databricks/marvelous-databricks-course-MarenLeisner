@@ -61,5 +61,27 @@ class DataProcessor:
                 ('cat', categorical_transformer, self.config['cat_features'])
             ])
 
-    def split_data(self, test_size=0.2, random_state=42):
-        return train_test_split(self.X, self.y, test_size=test_size, random_state=random_state)
+    def split_data(self, test_size: float = 0.2, random_state: int = 42, stratify: bool = False) -> tuple:
+        """Split data into training and testing sets.
+        
+        Args:
+            test_size: Proportion of dataset to include in the test split
+            random_state: Random seed for reproducibility
+            stratify: Whether to preserve target distribution in splits
+            
+        Returns:
+            tuple: (X_train, X_test, y_train, y_test)
+            
+        Raises:
+            ValueError: If X or y is None or empty
+        """
+        if self.X is None or self.y is None:
+            raise ValueError("Must run preprocess_data before splitting")
+        
+        stratify_param = self.y if stratify else None
+        return train_test_split(
+            self.X, self.y,
+            test_size=test_size,
+            random_state=random_state,
+            stratify=stratify_param
+        )
