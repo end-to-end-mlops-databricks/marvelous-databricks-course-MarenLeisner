@@ -8,8 +8,18 @@ logging.basicConfig(
     )
 logger = logging.getLogger(__name__)
 
-with open('project_config.yml', 'r') as file:
-    config = yaml.safe_load(file)
+try:
+    with open('project_config.yml', 'r') as file:
+        config = yaml.safe_load(file)
+    logger.info("Configuration loaded successfully")
+    # Log only non-sensitive keys
+    logger.debug("Loaded configuration keys: %s", list(config.keys()))
+except FileNotFoundError:
+    logger.error("Configuration file 'project_config.yml' not found")
+    raise
+except yaml.YAMLError as e:
+    logger.error("Error parsing configuration file: %s", e)
+    raise
 
 print("Configuration loaded:")
 print(yaml.dump(config, default_flow_style=False))
