@@ -5,6 +5,9 @@ table_name: trips
 databricks:
   profile_id: "adb-6130442328907134"
 
+data:
+  input_path: "samples.nyctaxi.trips"
+
 num_features:
   - trip_distance
 

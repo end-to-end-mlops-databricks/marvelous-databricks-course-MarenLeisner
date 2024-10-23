@@ -15,7 +15,7 @@ print("Configuration loaded:")
 print(yaml.dump(config, default_flow_style=False))
 
 spark = DatabricksSession.builder.profile(config['databricks']['profile_id']).getOrCreate()
-path = "samples.nyctaxi.trips"
+path = config['data']['input_path']
 
 # Initialize DataProcessor
 data_processor = DataProcessor(spark, path, config)
