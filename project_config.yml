@@ -2,6 +2,9 @@ catalog_name: samples
 schema_name: nyctaxi
 table_name: trips
 
+databricks:
+  profile_id: "adb-6130442328907134"
+
 num_features:
   - trip_distance
 
