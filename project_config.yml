@@ -2,12 +2,6 @@ catalog_name: samples
 schema_name: nyctaxi
 table_name: trips
 
-databricks:
-  profile_id: ${DATABRICKS_WORKSPACE_ID}
-
-data:
-  input_path: "samples.nyctaxi.trips"
-
 num_features:
   - trip_distance
 

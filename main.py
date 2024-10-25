@@ -1,5 +1,6 @@
 import yaml
 import logging
+import os
 from databricks.connect import DatabricksSession
 from taxinyc.data_processor import DataProcessor
 
@@ -21,9 +22,13 @@ except yaml.YAMLError as e:
     logger.error("Error parsing configuration file: %s", e)
     raise
 
+spark = DatabricksSession.builder.profile(os.environ['DATABRICKS_PROFILE']).getOrCreate()
 
-spark = DatabricksSession.builder.profile(config['databricks']['profile_id']).getOrCreate()
-path = config['data']['input_path']
+try:
+    path = config['catalog_name'] + '.'+ config['schema_name'] + '.' + config['table_name']
+    logger.info("path_name is:" , path)
+except KeyError as e:
+    logger.error("Error building path to data")
 
 try:
     # Initialize DataProcessor
