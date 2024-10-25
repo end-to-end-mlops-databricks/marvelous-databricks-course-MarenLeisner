@@ -10,8 +10,6 @@ class DataProcessor:
     def __init__(self, sparksession, table, config):
         self.df = self.load_data(sparksession, table)
         self.config = config
-        self.X = None
-        self.y = None
         self.preprocessor = None
     
     def load_data(self, sparksession, table: str) -> pd.DataFrame:
@@ -69,14 +67,12 @@ class DataProcessor:
             random_state: Random seed for reproducibility
             
         Returns:
-            tuple: (X_train, X_test, y_train, y_test)
+            tuple: (train_set, test_set)
             
         Raises:
             ValueError: If X or y is None or empty
-        """
-        if self.X is None or self.y is None:
-            raise ValueError("Must run preprocess_data before splitting")
-        
+        """ 
+
         train_set, test_set = train_test_split(self.df, test_size=test_size, random_state=random_state)
         return train_set, test_set
     
