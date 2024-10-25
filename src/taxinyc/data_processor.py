@@ -4,6 +4,7 @@ from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.impute import SimpleImputer
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
+from pyspark.sql import functions as F
 
 class DataProcessor:
     def __init__(self, sparksession, table, config):
@@ -60,13 +61,12 @@ class DataProcessor:
                 ('cat', categorical_transformer, self.config['cat_features'])
             ])
 
-    def split_data(self, test_size: float = 0.2, random_state: int = 42, stratify: bool = False) -> tuple:
+    def split_data(self, test_size: float = 0.2, random_state: int = 42) -> tuple:
         """Split data into training and testing sets.
         
         Args:
             test_size: Proportion of dataset to include in the test split
             random_state: Random seed for reproducibility
-            stratify: Whether to preserve target distribution in splits
             
         Returns:
             tuple: (X_train, X_test, y_train, y_test)
@@ -77,10 +77,25 @@ class DataProcessor:
         if self.X is None or self.y is None:
             raise ValueError("Must run preprocess_data before splitting")
         
-        stratify_param = self.y if stratify else None
-        return train_test_split(
-            self.X, self.y,
-            test_size=test_size,
-            random_state=random_state,
-            stratify=stratify_param
-        )
+        train_set, test_set = train_test_split(self.df, test_size=test_size, random_state=random_state)
+        return train_set, test_set
+    
+    def save_to_catalog(self, train_set: pd.DataFrame, test_set: pd.DataFrame, sparksession):
+        """Save the train and test sets into Databricks tables."""
+
+        train_set_with_timestamp = sparksession.createDataFrame(train_set).withColumn(
+            "update_timestamp_utc", F.to_utc_timestamp(F.current_timestamp(), "UTC"))   
+        
+        test_set_with_timestamp = sparksession.createDataFrame(test_set).withColumn(
+            "update_timestamp_utc", F.to_utc_timestamp(F.current_timestamp(), "UTC"))
+
+        train_set_with_timestamp.write.mode("append").saveAsTable(
+            f"{self.config['catalog_name']}.{self.config['schema_name']}.train_set_ma")
+        
+        test_set_with_timestamp.write.mode("append").saveAsTable(
+            f"{self.config['catalog_name']}.{self.config['schema_name']}.test_set_ma")
+
+        sparksession.sql(f"ALTER TABLE {self.config['catalog_name']}.{self.config['schema_name']}.train_set_ma SET TBLPROPERTIES (delta.enableChangeDataFeed = true);")
+        
+        sparksession.sql(f"ALTER TABLE {self.config['catalog_name']}.{self.config['schema_name']}.test_set_ma SET TBLPROPERTIES (delta.enableChangeDataFeed = true);")
+        
