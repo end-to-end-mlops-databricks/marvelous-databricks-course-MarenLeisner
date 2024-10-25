@@ -1,20 +1,18 @@
-import yaml
 import logging
 import os
+
+import yaml
 from databricks.connect import DatabricksSession
+
+from taxinyc.config import ProjectConfig
 from taxinyc.data_processor import DataProcessor
 
-logging.basicConfig(
-    level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s'
-    )
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 try:
-    with open('project_config.yml', 'r') as file:
-        config = yaml.safe_load(file)
+    config = ProjectConfig.from_yaml(config_path="./project_config.yml")
     logger.info("Configuration loaded successfully")
-    # Log only non-sensitive keys
-    logger.debug("Loaded configuration keys: %s", list(config.keys()))
 except FileNotFoundError:
     logger.error("Configuration file 'project_config.yml' not found")
     raise
@@ -22,12 +20,14 @@ except yaml.YAMLError as e:
     logger.error("Error parsing configuration file: %s", e)
     raise
 
-spark = DatabricksSession.builder.profile(os.environ['DATABRICKS_PROFILE']).getOrCreate()
+spark = DatabricksSession.builder.profile(os.environ["DATABRICKS_PROFILE"]).getOrCreate()
 
 try:
-    path = config['read_from']['catalog_name'] + '.'+ config['read_from']['schema_name'] + '.' + config['read_from']['table_name']
-    logger.info("path_name is:" , path)
-except KeyError as e:
+    path = (
+        config.read_from["catalog_name"] + "." + config.read_from["schema_name"] + "." + config.read_from["table_name"]
+    )
+    logger.info("path_name is:", path)
+except KeyError:
     logger.error("Error building path to data")
 
 try:
@@ -45,8 +45,8 @@ except Exception as e:
 try:
     # split Data
     train_set, test_set = data_processor.split_data()
-    logger.info('Data split into Train and Test Sets')
-    logger.debug(f"Training set shape: {train_set.shape}, Test set shape: {test_set.shape}") 
+    logger.info("Data split into Train and Test Sets")
+    logger.debug(f"Training set shape: {train_set.shape}, Test set shape: {test_set.shape}")
 except Exception as e:
     logger.error("Error during Splitting Test and Train split: %s", str(e))
 
