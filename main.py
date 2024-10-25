@@ -1,16 +1,16 @@
-import yaml
 import logging
 import os
+
+import yaml
 from databricks.connect import DatabricksSession
+
 from taxinyc.data_processor import DataProcessor
 
-logging.basicConfig(
-    level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s'
-    )
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 try:
-    with open('project_config.yml', 'r') as file:
+    with open("project_config.yml", "r") as file:
         config = yaml.safe_load(file)
     logger.info("Configuration loaded successfully")
     # Log only non-sensitive keys
@@ -22,12 +22,12 @@ except yaml.YAMLError as e:
     logger.error("Error parsing configuration file: %s", e)
     raise
 
-spark = DatabricksSession.builder.profile(os.environ['DATABRICKS_PROFILE']).getOrCreate()
+spark = DatabricksSession.builder.profile(os.environ["DATABRICKS_PROFILE"]).getOrCreate()
 
 try:
-    path = config['catalog_name'] + '.'+ config['schema_name'] + '.' + config['table_name']
-    logger.info("path_name is:" , path)
-except KeyError as e:
+    path = config["catalog_name"] + "." + config["schema_name"] + "." + config["table_name"]
+    logger.info("path_name is:", path)
+except KeyError:
     logger.error("Error building path to data")
 
 try:
