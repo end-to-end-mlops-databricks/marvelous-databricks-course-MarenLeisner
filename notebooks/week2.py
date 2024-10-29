@@ -9,9 +9,7 @@ mlflow.set_experiment(experiment_name="/Shared/taxinyc-fare-basic")
 mlflow.set_experiment_tags({"repository_name": "taxinyc-fare"})
 
 # COMMAND ----------
-experiments = mlflow.search_experiments(
-    filter_string="tags.repository_name='taxinyc-fare'"
-)
+experiments = mlflow.search_experiments(filter_string="tags.repository_name='taxinyc-fare'")
 print(experiments)
 
 # COMMAND ----------
@@ -20,8 +18,7 @@ with open("mlflow_experiment.json", "w") as json_file:
 # COMMAND ----------
 with mlflow.start_run(
     run_name="demo-run",
-    tags={"git_sha": "ffa63b430205ff7",
-          "branch": "week2"},
+    tags={"git_sha": "ffa63b430205ff7", "branch": "week2"},
     description="demo run",
 ) as run:
     mlflow.log_params({"type": "demo"})

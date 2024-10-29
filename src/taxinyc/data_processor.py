@@ -26,12 +26,7 @@ class DataProcessor:
         Raises:
             ValueError: If sparksession is not active or table doesn't exist
         """
-        if not sparksession:
-            raise ValueError("Invalid or inactive Spark session")
-        try:
-            return sparksession.read.table(table).toPandas()
-        except Exception as e:
-            raise ValueError(f"Failed to load table {table}: {str(e)}")
+        return sparksession.read.table(table).toPandas()
 
     def preprocess_data(self):
         # Remove rows with missing target
