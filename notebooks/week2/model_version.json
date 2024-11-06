@@ -1,0 +1,18 @@
+{
+    "_name": "sandbox.sb_adan.taxi_fare_model_pyfunc",
+    "_version": "1",
+    "_creation_time": 1730816424799,
+    "_last_updated_timestamp": 1730816442503,
+    "_description": "",
+    "_user_id": "maren.leisner@unicef.de",
+    "_current_stage": null,
+    "_source": "dbfs:/databricks/mlflow-tracking/3180815056272821/54b391eb9fbd4c2cb8d08e07d215e802/artifacts/pyfunc-taxi-fare-model",
+    "_run_id": "54b391eb9fbd4c2cb8d08e07d215e802",
+    "_run_link": null,
+    "_status": "READY",
+    "_status_message": "",
+    "_tags": {
+        "git_sha": "bla"
+    },
+    "_aliases": []
+}

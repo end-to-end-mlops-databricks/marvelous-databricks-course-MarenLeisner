@@ -11,7 +11,8 @@ class ProjectConfig(BaseModel):
     catalog_name: str
     schema_name: str
     read_from: Dict[str, Any]  # Dictonary where i read data from
-    # parameters: Dict[str, Any]  # Dictionary to hold model-related parameters
+    parameters: Dict[str, Any]  # Dictionary to hold model-related parameters
+    mlflow_experiment_name: str
 
     @classmethod
     def from_yaml(cls, config_path: str):
