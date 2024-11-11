@@ -50,7 +50,7 @@ mlflow_experiment_name = config.mlflow_experiment_name
 
 # Define table names and function name
 feature_table_name = f"{catalog_name}.{schema_name}.features_an"
-function_name = f"{catalog_name}.{schema_name}.calculate_travel_time"
+function_name = f"{catalog_name}.{schema_name}.calculate_travel_time_ma"
 
 
 # COMMAND ----------
@@ -80,7 +80,7 @@ spark.sql(f"INSERT INTO {catalog_name}.{schema_name}.features_ma"
           f"SELECT * FROM {catalog_name}.{schema_name}.test_set_ma")
 
 # COMMAND ----------
-# Define a function to calculate the power's age using the current year and YearBuilt
+# Define a function to calculate the travel time
 spark.sql(f"""
 CREATE OR REPLACE FUNCTION {function_name}(tpep_pickup_datetime TIMESTAMP, tpep_dropoff_datetime TIMESTAMP)
 RETURNS INT
