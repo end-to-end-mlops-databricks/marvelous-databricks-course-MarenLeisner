@@ -1,14 +1,14 @@
 # Databricks notebook source
 import json
-from lightgbm import LGBMRegressor
+
 import mlflow
+import pandas as pd
+from lightgbm import LGBMRegressor
 from mlflow import MlflowClient
 from mlflow.models import infer_signature
-import numpy as np
-import pandas as pd
 from pyspark.sql import SparkSession
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.pipeline import Pipeline
-from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 
 from taxinyc.config import ProjectConfig
 from taxinyc.utils import adjust_predictions
@@ -49,9 +49,7 @@ y_test = test_set[target]
 # COMMAND ----------
 
 # Create the pipeline with preprocessing and the LightGBM regressor
-pipeline = Pipeline(steps=[
-    ('regressor', LGBMRegressor(**parameters))
-])
+pipeline = Pipeline(steps=[("regressor", LGBMRegressor(**parameters))])
 
 
 # COMMAND ----------
@@ -60,8 +58,7 @@ git_sha = "bla"
 
 # Start an MLflow run to track the training process
 with mlflow.start_run(
-    tags={"git_sha": f"{git_sha}",
-          "branch": "week-2"},
+    tags={"git_sha": f"{git_sha}", "branch": "week-2"},
 ) as run:
     run_id = run.info.run_id
 
@@ -85,11 +82,9 @@ with mlflow.start_run(
     mlflow.log_metric("r2_score", r2)
     signature = infer_signature(model_input=X_train, model_output=y_pred)
 
-    dataset = mlflow.data.from_spark(
-    train_set_spark, table_name=f"{catalog_name}.{schema_name}.train_set",
-    version="0")
+    dataset = mlflow.data.from_spark(train_set_spark, table_name=f"{catalog_name}.{schema_name}.train_set", version="0")
     mlflow.log_input(dataset, context="training")
-    
+
     # mlflow.sklearn.log_model(
     #     sk_model=pipeline,
     #     artifact_path="lightgbm-pipeline-model",
@@ -98,50 +93,45 @@ with mlflow.start_run(
 
 # COMMAND ----------
 
+
 class TaxiFareModelWrapper(mlflow.pyfunc.PythonModel):
-    
     def __init__(self, model):
         self.model = model
-        
+
     def predict(self, context, model_input):
         if isinstance(model_input, pd.DataFrame):
             predictions = self.model.predict(model_input)
-            predictions = {"Prediction": adjust_predictions(
-                predictions[0])}
+            predictions = {"Prediction": adjust_predictions(predictions[0])}
             return predictions
         else:
             raise ValueError("Input must be a pandas DataFrame.")
 
 
+# COMMAND ----------
+
+wrapped_model = TaxiFareModelWrapper(pipeline)  # we pass the loaded model to the wrapper
 
 # COMMAND ----------
 
-wrapped_model = TaxiFareModelWrapper(pipeline) # we pass the loaded model to the wrapper
 
-# COMMAND ----------
-
-
-with mlflow.start_run(tags={"branch": "week-2",
-                            "git_sha": f"{git_sha}"}) as run:
-    
+with mlflow.start_run(tags={"branch": "week-2", "git_sha": f"{git_sha}"}) as run:
     run_id = run.info.run_id
     mlflow.pyfunc.log_model(
         python_model=wrapped_model,
         artifact_path="pyfunc-taxi-fare-model",
-        signature=infer_signature(model_input=[], model_output=[])
+        signature=infer_signature(model_input=[], model_output=[]),
     )
 
 # COMMAND ----------
-loaded_model = mlflow.pyfunc.load_model(f'runs:/{run_id}/pyfunc-taxi-fare-model')
+loaded_model = mlflow.pyfunc.load_model(f"runs:/{run_id}/pyfunc-taxi-fare-model")
 loaded_model.unwrap_python_model()
 
 # COMMAND ----------
 model_name = f"{catalog_name}.{schema_name}.taxi_fare_model_pyfunc"
 
 model_version = mlflow.register_model(
-    model_uri=f'runs:/{run_id}/pyfunc-taxi-fare-model',
-    name=model_name,
-    tags={"git_sha": f"{git_sha}"})
+    model_uri=f"runs:/{run_id}/pyfunc-taxi-fare-model", name=model_name, tags={"git_sha": f"{git_sha}"}
+)
 # COMMAND ----------
 
 with open("model_version.json", "w") as json_file:
@@ -149,15 +139,10 @@ with open("model_version.json", "w") as json_file:
 
 # COMMAND ----------
 model_version_alias = "the_best_model"
-client.set_registered_model_alias(model_name, model_version_alias, "1")  
- 
+client.set_registered_model_alias(model_name, model_version_alias, "1")
+
 model_uri = f"models:/{model_name}@{model_version_alias}"
 model = mlflow.pyfunc.load_model(model_uri)
-
-# COMMAND ----------
-client.get_model_version_by_alias(model_name, model_version_alias)
-# COMMAND ----------
-model
 
 # COMMAND ----------
 

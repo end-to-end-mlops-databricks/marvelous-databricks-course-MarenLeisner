@@ -3,24 +3,26 @@
 
 # COMMAND ----------
 
-dbutils.library.restartPython() 
+# dbutils.library.restartPython()
 
 # COMMAND ----------
-import yaml
-from databricks import feature_engineering
-from pyspark.sql import SparkSession
-from databricks.sdk import WorkspaceClient
+
+import logging
+
 import mlflow
-from pyspark.sql import functions as F
+from databricks import feature_engineering
+from databricks.feature_engineering import FeatureFunction, FeatureLookup
+from databricks.sdk import WorkspaceClient
 from lightgbm import LGBMRegressor
 from mlflow.models import infer_signature
-from sklearn.compose import ColumnTransformer
-from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
+from pyspark.sql import SparkSession
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import OneHotEncoder
-from datetime import datetime
-from databricks.feature_engineering import FeatureFunction, FeatureLookup
+
 from taxinyc.config import ProjectConfig
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+logger = logging.getLogger(__name__)
 
 
 # Initialize the Databricks session and clients
@@ -67,17 +69,21 @@ CREATE OR REPLACE TABLE {catalog_name}.{schema_name}.features_ma
  trip_distance INT);
 """)
 
-spark.sql(f"ALTER TABLE {catalog_name}.{schema_name}.features_ma "
-          "ADD CONSTRAINT taxitrip_pk PRIMARY KEY(pickup_zip);")
+spark.sql(
+    f"ALTER TABLE {catalog_name}.{schema_name}.features_ma " "ADD CONSTRAINT taxitrip_pk PRIMARY KEY(pickup_zip);"
+)
 # COMMAND ----------
-spark.sql(f"ALTER TABLE {catalog_name}.{schema_name}.features_ma"
-          "SET TBLPROPERTIES (delta.enableChangeDataFeed = true);")
+spark.sql(
+    f"ALTER TABLE {catalog_name}.{schema_name}.features_ma" "SET TBLPROPERTIES (delta.enableChangeDataFeed = true);"
+)
 
 # Insert data into the feature table from both train and test sets
-spark.sql(f"INSERT INTO {catalog_name}.{schema_name}.features_ma "
-          f"SELECT * FROM {catalog_name}.{schema_name}.train_set_ma")
-spark.sql(f"INSERT INTO {catalog_name}.{schema_name}.features_ma"
-          f"SELECT * FROM {catalog_name}.{schema_name}.test_set_ma")
+spark.sql(
+    f"INSERT INTO {catalog_name}.{schema_name}.features_ma " f"SELECT * FROM {catalog_name}.{schema_name}.train_set_ma"
+)
+spark.sql(
+    f"INSERT INTO {catalog_name}.{schema_name}.features_ma" f"SELECT * FROM {catalog_name}.{schema_name}.test_set_ma"
+)
 
 # COMMAND ----------
 # Define a function to calculate the travel time
@@ -118,10 +124,13 @@ training_set = fe.create_training_set(
         FeatureFunction(
             udf_name=function_name,
             output_name="travel_time",
-            input_bindings={"tpep_pickup_datetime": "tpep_pickup_datetime", "tpep_dropoff_datetime": "tpep_dropoff_datetime"},
+            input_bindings={
+                "tpep_pickup_datetime": "tpep_pickup_datetime",
+                "tpep_dropoff_datetime": "tpep_dropoff_datetime",
+            },
         ),
     ],
-    exclude_columns=["update_timestamp_utc"]
+    exclude_columns=["update_timestamp_utc"],
 )
 # COMMAND ----------
 
@@ -135,16 +144,13 @@ X_test = test_set[num_features]
 y_test = test_set[target]
 
 # Setup preprocessing and model pipeline
-pipeline = Pipeline(
-    steps=[("regressor", LGBMRegressor(**parameters))]
-)
+pipeline = Pipeline(steps=[("regressor", LGBMRegressor(**parameters))])
 
 # Set and start MLflow experiment
 mlflow.set_experiment(experiment_name=config.mlflow_experiment_name)
 git_sha = "bla"
 
-with mlflow.start_run(tags={"branch": "week-2",
-                            "git_sha": f"{git_sha}"}) as run:
+with mlflow.start_run(tags={"branch": "week-2", "git_sha": f"{git_sha}"}) as run:
     run_id = run.info.run_id
     pipeline.fit(X_train, y_train)
     y_pred = pipeline.predict(X_test)
@@ -174,6 +180,6 @@ with mlflow.start_run(tags={"branch": "week-2",
         signature=signature,
     )
 mlflow.register_model(
-    model_uri=f'runs:/{run_id}/lightgbm-pipeline-model-fe',
-    name=f"{catalog_name}.{schema_name}.power_consumptions_model_fe")
-    
+    model_uri=f"runs:/{run_id}/lightgbm-pipeline-model-fe",
+    name=f"{catalog_name}.{schema_name}.power_consumptions_model_fe",
+)

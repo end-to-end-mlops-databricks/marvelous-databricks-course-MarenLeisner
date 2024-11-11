@@ -1,12 +1,16 @@
 # Databricks notebook source
-from pyspark.sql import SparkSession
-from databricks.connect import DatabricksSession
+import logging
 import os
 
-from taxinyc.data_processor import DataProcessor
+from databricks.connect import DatabricksSession
+from pyspark.sql import SparkSession
+
 from taxinyc.config import ProjectConfig
+from taxinyc.data_processor import DataProcessor
 
 spark = SparkSession.builder.getOrCreate()
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+logger = logging.getLogger(__name__)
 
 # COMMAND ----------
 
@@ -33,3 +37,5 @@ data_processor.preprocess()
 train_set, test_set = data_processor.split_data()
 data_processor.save_to_catalog(train_set=train_set, test_set=test_set, spark=spark)
 print("DONE")
+
+# COMMAND ----------
