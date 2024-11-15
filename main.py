@@ -1,5 +1,4 @@
 import logging
-import os
 
 import yaml
 from databricks.connect import DatabricksSession
