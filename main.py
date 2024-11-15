@@ -20,7 +20,7 @@ except yaml.YAMLError as e:
     logger.error("Error parsing configuration file: %s", e)
     raise
 
-spark = DatabricksSession.builder.profile(os.environ["DATABRICKS_PROFILE"]).getOrCreate()
+spark = DatabricksSession.builder.getOrCreate()
 
 try:
     path = f"{config.read_from["catalog_name"]}.{config.read_from["schema_name"]}.{config.read_from["table_name"]}"
