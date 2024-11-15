@@ -1,0 +1,23 @@
+read_from:
+  catalog_name: samples
+  schema_name: nyctaxi
+  table_name: trips
+
+catalog_name: sandbox
+schema_name: sb_adan
+
+parameters:
+  learning_rate: 0.01
+  n_estimators: 1000
+  max_depth: 6
+
+num_features:
+  - trip_distance
+
+cat_features:
+  - pickup_zip
+  - dropoff_zip
+
+target: fare_amount
+
+mlflow_experiment_name: /Shared/mlops_course_maren
