@@ -1,5 +1,5 @@
 # Databricks notebook source
-# MAGIC %pip install /Volumes/main/default/file_exchange/denninger/nyc_taxi-0.0.1-py3-none-any.whl
+# MAGIC %pip install /Volumes/main/default/file_exchange/maren/taxinyc-0.0.1-py3-none-any.whl
 
 # COMMAND ----------
 
@@ -35,7 +35,7 @@ from databricks.sdk.service.catalog import (
 from databricks.sdk.service.serving import EndpointCoreConfigInput, ServedEntityInput
 from pyspark.sql import SparkSession
 
-from nyctaxi.config import ProjectConfig
+from taxinyc.config import ProjectConfig
 
 spark = SparkSession.builder.getOrCreate()
 
@@ -68,8 +68,8 @@ feature_table_name = f"{catalog_name}.{schema_name}.nyctaxi_preds"
 online_table_name = f"{catalog_name}.{schema_name}.nyctaxi_preds_online"
 
 # Load training and test sets from Catalog
-train_set = spark.table(f"{catalog_name}.{schema_name}.train_set_an").toPandas()
-test_set = spark.table(f"{catalog_name}.{schema_name}.test_set_an").toPandas()
+train_set = spark.table(f"{catalog_name}.{schema_name}.train_set_ma").toPandas()
+test_set = spark.table(f"{catalog_name}.{schema_name}.test_set_ma").toPandas()
 
 df = pd.concat([train_set, test_set])
 

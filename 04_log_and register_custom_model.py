@@ -4,17 +4,14 @@ import numpy as np
 import pandas as pd
 from pyspark.sql import SparkSession
 from mlflow.models import infer_signature
-from nyctaxi.config import ProjectConfig
+from taxinyc.config import ProjectConfig
 import json
 from mlflow import MlflowClient
 from mlflow.utils.environment import _mlflow_conda_env
-from nyctaxi.utils import adjust_predictions
+from taxinyc.utils import adjust_predictions
 
-
-#mlflow.set_tracking_uri("databricks")
 mlflow.set_tracking_uri("databricks://adb-6130442328907134")
 
-#mlflow.set_registry_uri('databricks-uc') 
 mlflow.set_registry_uri('databricks-uc://adb-6130442328907134') # It must be -uc for registering models to Unity Catalog
 client = MlflowClient()
 
@@ -39,7 +36,7 @@ spark = SparkSession.builder.getOrCreate()
 
 #run_id = mlflow.search_runs(
     #experiment_names=mlflow_experiment_name,
-    #filter_string="tags.branch='week2'",
+    #filter_string="tags.branch='week-3'",
 #).run_id[1]
 
 
@@ -64,8 +61,8 @@ class NYCTaxiWrapper(mlflow.pyfunc.PythonModel):
             raise ValueError("Input must be a pandas DataFrame.")
 
 # COMMAND ----------
-train_set = spark.table(f"{catalog_name}.{schema_name}.train_set_an")
-test_set = spark.table(f"{catalog_name}.{schema_name}.test_set_an")
+train_set = spark.table(f"{catalog_name}.{schema_name}.train_set_ma")
+test_set = spark.table(f"{catalog_name}.{schema_name}.test_set_ma")
 
 X_train = train_set[num_features].toPandas()
 y_train = train_set[[target]].toPandas()

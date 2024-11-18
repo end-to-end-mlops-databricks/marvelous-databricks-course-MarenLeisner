@@ -1,5 +1,5 @@
 # Databricks notebook source
-# MAGIC %pip install /Volumes/main/default/file_exchange/denninger/nyc_taxi-0.0.1-py3-none-any.whl
+# MAGIC %pip install /Volumes/main/default/file_exchange/maren/taxinyc-0.0.1-py3-none-any.whl
 
 # COMMAND ----------
 
@@ -40,10 +40,10 @@ schema_name = config.schema_name
 
 # COMMAND ----------
 
-online_table_name = f"{catalog_name}.{schema_name}.features_an_online"
+online_table_name = f"{catalog_name}.{schema_name}.features_ma_online"
 spec = OnlineTableSpec(
     primary_key_columns=["pickup_zip"],
-    source_table_full_name=f"{catalog_name}.{schema_name}.features_an",
+    source_table_full_name=f"{catalog_name}.{schema_name}.features_ma",
     run_triggered=OnlineTableSpecTriggeredSchedulingPolicy.from_dict({"triggered": "true"}),
     perform_full_copy=False,
 )

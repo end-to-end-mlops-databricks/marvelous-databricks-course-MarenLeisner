@@ -1,7 +1,6 @@
 # Databricks notebook source
-import yaml
 from pyspark.sql import SparkSession
-from nyctaxi.config import ProjectConfig
+from taxinyc.config import ProjectConfig
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
@@ -19,19 +18,7 @@ mlflow.set_registry_uri('databricks-uc://adb-6130442328907134') # It must be -uc
 # COMMAND ----------
 
 # Load configuration
-#with open("project_config.yml", "r") as file:
-    #config = yaml.safe_load(file)
-
-#print(yaml.dump(config, default_flow_style=False))
 config = ProjectConfig.from_yaml(config_path="project_config.yml")
-
-# Extract configuration details
-#num_features = config['num_features']
-#cat_features = config['cat_features']
-#target = config['target']
-#parameters = config['parameters']
-#catalog_name = config['catalog_name']
-#schema_name = config['schema_name']
 
 num_features = config.num_features
 cat_features = config.cat_features
@@ -103,7 +90,7 @@ with mlflow.start_run(
     signature = infer_signature(model_input=X_train, model_output=y_pred)
 
     dataset = mlflow.data.from_spark(
-    train_set_spark, table_name=f"{catalog_name}.{schema_name}.train_set_an",
+    train_set_spark, table_name=f"{catalog_name}.{schema_name}.train_set_ma",
     version="0")
     mlflow.log_input(dataset, context="training")
     
@@ -117,7 +104,7 @@ with mlflow.start_run(
 # COMMAND ----------
 model_version = mlflow.register_model(
     model_uri=f'runs:/{run_id}/lightgbm-pipeline-model',
-    name=f"{catalog_name}.{schema_name}.nyctaxi_model_basic",
+    name=f"{catalog_name}.{schema_name}.nyctaxi_model_basic_ma",
     tags={"git_sha": f"{git_sha}"})
 
 # COMMAND ----------

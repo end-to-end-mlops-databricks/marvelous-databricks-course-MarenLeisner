@@ -1,5 +1,5 @@
 # Databricks notebook source
-# MAGIC %pip install /Volumes/main/default/file_exchange/denninger/nyc_taxi-0.0.1-py3-none-any.whl
+# MAGIC %pip install /Volumes/main/default/file_exchange/maren/taxinyc-0.0.1-py3-none-any.whl
 
 # COMMAND ----------
 
@@ -70,9 +70,9 @@ parameters_b = {
 spark = SparkSession.builder.getOrCreate()
 
 # Load the training and testing sets from Databricks tables
-train_set_spark = spark.table(f"{catalog_name}.{schema_name}.train_set_an")
+train_set_spark = spark.table(f"{catalog_name}.{schema_name}.train_set_ma")
 train_set = train_set_spark.toPandas()
-test_set = spark.table(f"{catalog_name}.{schema_name}.test_set_an").toPandas()
+test_set = spark.table(f"{catalog_name}.{schema_name}.test_set_ma").toPandas()
 
 # Define features and target variables
 X_train = train_set[num_features]
@@ -98,7 +98,7 @@ pipeline = Pipeline(steps=[("regressor", LGBMRegressor(**parameters_a))])
 
 
 # Set the MLflow experiment to track this A/B testing project
-mlflow.set_experiment(experiment_name="/Shared/mlops_course_annika_ab") 
+mlflow.set_experiment(experiment_name="/Shared/mlops_course_maren_ab") 
 model_name = f"{catalog_name}.{schema_name}.nyctaxi_model_ab"
 
 # Git commit hash for tracking model version
@@ -127,7 +127,7 @@ with mlflow.start_run(tags={"model_class": "A", "git_sha": git_sha}) as run:
 
     # Log the input dataset for tracking reproducibility
     dataset = mlflow.data.from_spark(train_set_spark,
-                                     table_name=f"{catalog_name}.{schema_name}.train_set_an",
+                                     table_name=f"{catalog_name}.{schema_name}.train_set_ma",
                                      version="0")
     mlflow.log_input(dataset, context="training")
 
@@ -254,7 +254,7 @@ print("Example Prediction:", example_prediction)
 
 # COMMAND ----------
 
-mlflow.set_experiment(experiment_name="/Shared/mlops_course_annika-ab-testing")
+mlflow.set_experiment(experiment_name="/Shared/mlops_course_maren-ab-testing")
 model_name = f"{catalog_name}.{schema_name}.nyctaxi_model_pyfunc_ab_test" 
 
 with mlflow.start_run() as run:
@@ -263,7 +263,7 @@ with mlflow.start_run() as run:
                                 model_output={"Prediction": 1234.5,
                                               "model": "Model B"})
     dataset = mlflow.data.from_spark(train_set_spark,
-                                     table_name=f"{catalog_name}.{schema_name}.train_set_an",
+                                     table_name=f"{catalog_name}.{schema_name}.train_set_ma",
                                      version="0")
     mlflow.log_input(dataset, context="training")
     mlflow.pyfunc.log_model(

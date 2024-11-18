@@ -1,5 +1,4 @@
 import logging
-import os
 
 import yaml
 from databricks.connect import DatabricksSession
@@ -20,12 +19,10 @@ except yaml.YAMLError as e:
     logger.error("Error parsing configuration file: %s", e)
     raise
 
-spark = DatabricksSession.builder.profile(os.environ["DATABRICKS_PROFILE"]).getOrCreate()
+spark = DatabricksSession.builder.getOrCreate()
 
 try:
-    path = (
-        config.read_from["catalog_name"] + "." + config.read_from["schema_name"] + "." + config.read_from["table_name"]
-    )
+    path = f"{config.read_from["catalog_name"]}.{config.read_from["schema_name"]}.{config.read_from["table_name"]}"
     logger.info("path_name is:", path)
 except KeyError:
     logger.error("Error building path to data")

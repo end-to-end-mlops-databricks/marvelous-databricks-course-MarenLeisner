@@ -1,5 +1,5 @@
 # Databricks notebook source
-# MAGIC %pip install /Volumes/main/default/file_exchange/denninger/nyc_taxi-0.0.1-py3-none-any.whl
+# MAGIC %pip install /Volumes/main/default/file_exchange/maren/taxinyc-0.0.1-py3-none-any.whl
 
 # COMMAND ----------
 
@@ -7,7 +7,6 @@ dbutils.library.restartPython()
 
 # COMMAND ----------
 
-import yaml
 from databricks import feature_engineering
 from pyspark.sql import SparkSession
 from databricks.sdk import WorkspaceClient
@@ -21,8 +20,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder
 from datetime import datetime
 from databricks.feature_engineering import FeatureFunction, FeatureLookup
-from nyctaxi.config import ProjectConfig
-
+from taxinyc.config import ProjectConfig
 
 # Initialize the Databricks session and clients
 spark = SparkSession.builder.getOrCreate()
@@ -49,37 +47,37 @@ schema_name = config.schema_name
 mlflow_experiment_name = config.mlflow_experiment_name
 
 # Define table names and function name
-feature_table_name = f"{catalog_name}.{schema_name}.features_an"
+feature_table_name = f"{catalog_name}.{schema_name}.features_ma"
 function_name = f"{catalog_name}.{schema_name}.calculate_travel_time"
 
 
 # COMMAND ----------
 
 # Load training and test sets
-train_set = spark.table(f"{catalog_name}.{schema_name}.train_set_an")
-test_set = spark.table(f"{catalog_name}.{schema_name}.test_set_an")
+train_set = spark.table(f"{catalog_name}.{schema_name}.train_set_ma")
+test_set = spark.table(f"{catalog_name}.{schema_name}.test_set_ma")
 
 
 # COMMAND ----------
 
 # Create or replace the features_an table
 spark.sql(f"""
-CREATE OR REPLACE TABLE {catalog_name}.{schema_name}.features_an
+CREATE OR REPLACE TABLE {catalog_name}.{schema_name}.features_ma
 (pickup_zip INT NOT NULL,
  trip_distance INT);
 """)
 
-spark.sql(f"ALTER TABLE {catalog_name}.{schema_name}.features_an "
+spark.sql(f"ALTER TABLE {catalog_name}.{schema_name}.features_ma"
           "ADD CONSTRAINT taxitrip_pk PRIMARY KEY(pickup_zip);")
 
-spark.sql(f"ALTER TABLE {catalog_name}.{schema_name}.features_an "
+spark.sql(f"ALTER TABLE {catalog_name}.{schema_name}.features_ma"
           "SET TBLPROPERTIES (delta.enableChangeDataFeed = true);")
 
 # Insert data into the feature table from both train and test sets
-spark.sql(f"INSERT INTO {catalog_name}.{schema_name}.features_an "
-          f"SELECT pickup_zip, trip_distance FROM {catalog_name}.{schema_name}.train_set_an")
-spark.sql(f"INSERT INTO {catalog_name}.{schema_name}.features_an "
-          f"SELECT pickup_zip, trip_distance FROM {catalog_name}.{schema_name}.test_set_an")
+spark.sql(f"INSERT INTO {catalog_name}.{schema_name}.features_ma"
+          f"SELECT pickup_zip, trip_distance FROM {catalog_name}.{schema_name}.train_set_ma")
+spark.sql(f"INSERT INTO {catalog_name}.{schema_name}.features_ma"
+          f"SELECT pickup_zip, trip_distance FROM {catalog_name}.{schema_name}.test_set_ma")
 
 # COMMAND ----------
 
@@ -98,8 +96,8 @@ $$
 # COMMAND ----------
 
 # Load training and test sets
-train_set = spark.table(f"{catalog_name}.{schema_name}.train_set_an").drop("trip_distance")
-test_set = spark.table(f"{catalog_name}.{schema_name}.test_set_an").toPandas()
+train_set = spark.table(f"{catalog_name}.{schema_name}.train_set_ma").drop("trip_distance")
+test_set = spark.table(f"{catalog_name}.{schema_name}.test_set_ma").toPandas()
 
 # COMMAND ----------
 
@@ -148,12 +146,12 @@ pipeline = Pipeline(
 # COMMAND ----------
 
 # Set and start MLflow experiment
-mlflow.set_experiment(experiment_name="/Shared/mlops_course_annika-fe")
+mlflow.set_experiment(experiment_name="/Shared/mlops_course_maren-fe")
 git_sha = "blub"
 
 # COMMAND ----------
 
-with mlflow.start_run(tags={"branch": "week2",
+with mlflow.start_run(tags={"branch": "week-3",
                             "git_sha": f"{git_sha}"}) as run:
     run_id = run.info.run_id
     pipeline.fit(X_train, y_train)
