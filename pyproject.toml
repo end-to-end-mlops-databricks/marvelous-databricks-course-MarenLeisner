@@ -1,7 +1,7 @@
 [project]
-name = "house-price"
+name = "taxinyc"
 version = "0.0.1"
-description = "Housing prices project"
+description = "NYC Taxi fare"
 requires-python = ">=3.11"
 dependencies = ["scikit-learn>=1.5.1, <2",
                 "mlflow>=2.16.0, <3",

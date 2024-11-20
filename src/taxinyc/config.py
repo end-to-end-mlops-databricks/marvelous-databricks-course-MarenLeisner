@@ -10,7 +10,9 @@ class ProjectConfig(BaseModel):
     target: str
     catalog_name: str
     schema_name: str
-    read_from: Dict[str, Any]  # Dictonary where i read data from
+    read_from_catalog_name: str
+    read_from_schema_name: str
+    read_from_table_name: str
     parameters: Dict[str, Any]  # Dictionary to hold model-related parameters
     mlflow_experiment_name: str
 

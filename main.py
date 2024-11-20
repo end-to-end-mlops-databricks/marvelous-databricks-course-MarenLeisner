@@ -22,7 +22,7 @@ except yaml.YAMLError as e:
 spark = DatabricksSession.builder.getOrCreate()
 
 try:
-    path = f"{config.read_from["catalog_name"]}.{config.read_from["schema_name"]}.{config.read_from["table_name"]}"
+    path = f'{config.read_from_catalog_name}.{config.read_from_schema_name}.{config.read_from_table_name}'
     logger.info("path_name is:", path)
 except KeyError:
     logger.error("Error building path to data")
