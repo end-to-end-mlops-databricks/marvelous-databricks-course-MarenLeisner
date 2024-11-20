@@ -22,7 +22,7 @@ except yaml.YAMLError as e:
 spark = DatabricksSession.builder.getOrCreate()
 
 try:
-    path = f"{config.read_from["catalog_name"]}.{config.read_from["schema_name"]}.{config.read_from["table_name"]}"
+    path = f"{config.read_from_catalog_name}.{config.read_from_schema_name}.{config.read_from_table_name}"
     logger.info("path_name is:", path)
 except KeyError:
     logger.error("Error building path to data")
@@ -49,7 +49,6 @@ except Exception as e:
 
 try:
     # store Data in Db-Tables
-    train_set, test_set = data_processor.split_data()
     data_processor.save_to_catalog(train_set=train_set, test_set=test_set, sparksession=spark)
 except Exception as e:
     logger.error("Error during stroring train and test data: %s", str(e))

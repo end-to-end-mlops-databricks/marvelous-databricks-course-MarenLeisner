@@ -1,7 +1,6 @@
-read_from:
-  catalog_name: samples
-  schema_name: nyctaxi
-  table_name: trips
+read_from_catalog_name: samples
+read_from_schema_name: nyctaxi
+read_from_table_name: trips
 
 catalog_name: sandbox
 schema_name: sb_adan
@@ -21,3 +20,10 @@ cat_features:
 target: fare_amount
 
 mlflow_experiment_name: /Shared/mlops_course_maren
+
+ab_test:
+  learning_rate_a: 0.02
+  learning_rate_b: 0.02
+  n_estimators: 1000
+  max_depth_a: 6
+  max_depth_b: 10

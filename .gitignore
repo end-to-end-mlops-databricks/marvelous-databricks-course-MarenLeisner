@@ -97,3 +97,7 @@ dmypy.json
 .history
 
 .databricks
+notebooks/week2/mlruns/
+mlruns/
+notebooks/*.json
+model_version.json
