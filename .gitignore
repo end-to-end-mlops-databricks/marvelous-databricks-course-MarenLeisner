@@ -97,5 +97,7 @@ dmypy.json
 .history
 
 .databricks
-mlflow_experiment.json
-run_info.json
+notebooks/week2/mlruns/
+mlruns/
+notebooks/*.json
+model_version.json
