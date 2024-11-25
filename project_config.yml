@@ -19,6 +19,8 @@ cat_features:
 
 target: fare_amount
 
+id_col: pickup_zip
+
 mlflow_experiment_name: /Shared/mlops_course_maren
 
 ab_test:

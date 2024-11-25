@@ -15,6 +15,7 @@ class ProjectConfig(BaseModel):
     read_from_table_name: str
     parameters: Dict[str, Any]  # Dictionary to hold model-related parameters
     mlflow_experiment_name: str
+    id_col: str
 
     @classmethod
     def from_yaml(cls, config_path: str):

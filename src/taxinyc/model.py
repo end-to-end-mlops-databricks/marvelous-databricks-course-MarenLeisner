@@ -1,7 +1,8 @@
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.pipeline import Pipeline
-
+import mlflow
+import pandas as pd
 
 class FareModel:
     def __init__(self, preprocessor, config):
@@ -36,3 +37,15 @@ class FareModel:
         feature_importance = self.model.named_steps["regressor"].feature_importances_
         feature_names = self.model.named_steps["preprocessor"].get_feature_names_out()
         return feature_importance, feature_names
+
+class TaxiFareModelWrapper(mlflow.pyfunc.PythonModel):
+    
+    def __init__(self, model):
+        self.model = model
+        
+    def predict(self, context, model_input):
+        if isinstance(model_input, pd.DataFrame):
+            predictions = self.model.predict(model_input)
+            return predictions
+        else:
+            raise ValueError("Input must be a pandas DataFrame.")
