@@ -24,7 +24,7 @@ existing_ids = set(id for id in combined_set[config.id_col])
 def create_synthetic_data(df, num_rows=100):
     synthetic_data = pd.DataFrame() 
     for column in df.columns:
-        if pd.api.types.is_numeric_dtype(df[column]) and column != config.id_col:
+        if pd.api.types.is_numeric_dtype(df[column]):
             mean, std = df[column].mean(), df[column].std()
             synthetic_data[column] = np.random.normal(mean, std, num_rows)
         elif pd.api.types.is_categorical_dtype(df[column]) or pd.api.types.is_object_dtype(df[column]):
@@ -33,7 +33,7 @@ def create_synthetic_data(df, num_rows=100):
         elif isinstance(df[column].dtype, pd.CategoricalDtype) or isinstance(df[column].dtype, pd.StringDtype):
             synthetic_data[column] = np.random.choice(df[column].unique(), num_rows, 
                                                       p=df[column].value_counts(normalize=True))
-        elif pd.api.types.is_datetime64_any_dtype(df[column]):
+        elif pd.api.types.is_datetime64_any_dtype(df[column]) and column != config.id_col:
             min_date, max_date = df[column].min(), df[column].max()
             if min_date < max_date:
                 synthetic_data[column] = pd.to_datetime(

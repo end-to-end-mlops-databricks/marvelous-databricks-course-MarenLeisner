@@ -76,7 +76,7 @@ job_run_id = args.job_run_id
 git_sha = args.git_sha
 
 config_path = (f"{root_path}/project_config.yml")
-# config_path = ("/Volumes/mlops_test/power_consumptions/data/project_config.yml")
+# config_path = ("/Volumes/mlops_test/taxi_nyc/data/project_config.yml")
 config = ProjectConfig.from_yaml(config_path=config_path)
 
 # try:
@@ -156,7 +156,7 @@ if True:
     print("New model is better based on MAE.")
     model_version = mlflow.register_model(
       model_uri=new_model_uri,
-      name=f"{catalog_name}.{schema_name}.pyfunc-taxi-fare-model",
+      name=f"{catalog_name}.{schema_name}.taxi_fare_model_pyfunc",
       tags={"git_sha": f"{git_sha}",
             "job_run_id": job_run_id})
 

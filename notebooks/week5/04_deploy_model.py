@@ -46,7 +46,7 @@ workspace.serving_endpoints.update_config_and_wait(
     name="taxi-fare-model-serving",
     served_entities=[
         ServedEntityInput(
-            entity_name=f"{catalog_name}.{schema_name}.pyfunc-taxi-fare-model",
+            entity_name=f"{catalog_name}.{schema_name}.taxi_fare_model_pyfunc",
             scale_to_zero_enabled=True,
             workload_size="Small",
             entity_version=model_version,

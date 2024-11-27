@@ -1,12 +1,10 @@
 """
-This script trains a LightGBM model for taxi fare in nyc prediction with feature engineering.
+This script trains a LightGBM model for taxi fare in nyc prediction
 Key functionality:
 - Loads training and test data from Databricks tables
-- Performs feature engineering using Databricks Feature Store
 - Creates a pipeline with preprocessing and LightGBM regressor
 - Tracks the experiment using MLflow
 - Logs model metrics, parameters and artifacts
-- Handles feature lookups and custom feature functions
 - Outputs model URI for downstream tasks
 
 The model uses both numerical and categorical features, including a custom calculated time feature.
@@ -150,14 +148,14 @@ with mlflow.start_run(tags={"branch": "week5",
     run_id = run.info.run_id
     mlflow.pyfunc.log_model(
         python_model=wrapped_model,
-        artifact_path="pyfunc-taxi-fare-model",
+        artifact_path="taxi_fare_model_pyfunc",
         code_paths = [f"{root_path}/notebooks/taxinyc-0.0.1-py3-none-any.whl"],
         signature=signature,
         conda_env=conda_env
     )
 
 
-model_uri=f'runs:/{run_id}/pyfunc-taxi-fare-model'
+model_uri=f'runs:/{run_id}/taxi_fare_model_pyfunc'
 dbutils.jobs.taskValues.set(key="new_model_uri", value=model_uri)
 
 print(model_uri)
