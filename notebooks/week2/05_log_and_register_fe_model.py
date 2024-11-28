@@ -3,17 +3,21 @@
 
 # COMMAND ----------
 
-# dbutils.library.restartPython()
+
+
+
+# COMMAND ----------
+
+dbutils.library.restartPython()
 
 # COMMAND ----------
 
 import logging
 
 import mlflow
-from databricks import feature_engineering
-from databricks.feature_engineering import FeatureFunction, FeatureLookup
+from databricks.feature_engineering import FeatureEngineeringClient, FeatureLookup
 from databricks.sdk import WorkspaceClient
-from lightgbm import LGBMRegressor
+#from lightgbm import LGBMRegressor
 from mlflow.models import infer_signature
 from pyspark.sql import SparkSession
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
@@ -28,7 +32,7 @@ logger = logging.getLogger(__name__)
 # Initialize the Databricks session and clients
 spark = SparkSession.builder.getOrCreate()
 workspace = WorkspaceClient()
-fe = feature_engineering.FeatureEngineeringClient()
+fe = FeatureEngineeringClient()
 
 # COMMAND ----------
 
@@ -56,12 +60,14 @@ function_name = f"{catalog_name}.{schema_name}.calculate_travel_time_ma"
 
 
 # COMMAND ----------
+
 # Load training and test sets
 train_set = spark.table(f"{catalog_name}.{schema_name}.train_set_ma")
 test_set = spark.table(f"{catalog_name}.{schema_name}.test_set_ma")
 
 
 # COMMAND ----------
+
 # Create or replace the power_features table
 spark.sql(f"""
 CREATE OR REPLACE TABLE {catalog_name}.{schema_name}.features_ma
@@ -72,7 +78,9 @@ CREATE OR REPLACE TABLE {catalog_name}.{schema_name}.features_ma
 spark.sql(
     f"ALTER TABLE {catalog_name}.{schema_name}.features_ma " "ADD CONSTRAINT taxitrip_pk PRIMARY KEY(pickup_zip);"
 )
+
 # COMMAND ----------
+
 spark.sql(
     f"ALTER TABLE {catalog_name}.{schema_name}.features_ma" "SET TBLPROPERTIES (delta.enableChangeDataFeed = true);"
 )
@@ -86,6 +94,7 @@ spark.sql(
 )
 
 # COMMAND ----------
+
 # Define a function to calculate the travel time
 spark.sql(f"""
 CREATE OR REPLACE FUNCTION {function_name}(tpep_pickup_datetime TIMESTAMP, tpep_dropoff_datetime TIMESTAMP)
@@ -99,6 +108,7 @@ $$
 """)
 
 # COMMAND ----------
+
 # Load training and test sets
 train_set = spark.table(f"{catalog_name}.{schema_name}.train_set_ma").drop("trip_distance")
 test_set = spark.table(f"{catalog_name}.{schema_name}.test_set_ma").toPandas()
@@ -106,6 +116,7 @@ test_set = spark.table(f"{catalog_name}.{schema_name}.test_set_ma").toPandas()
 # Cast YearBuilt to int for the function input
 # train_set = train_set.withColumn("RoundedTemp", train_set["RoundedTemp"].cast("int"))
 # train_set = train_set.withColumn("DateTime", train_set["DateTime"].cast("string"))
+
 # COMMAND ----------
 
 # TODO: This leads to unauthorized error as Maria said
@@ -132,6 +143,7 @@ training_set = fe.create_training_set(
     ],
     exclude_columns=["update_timestamp_utc"],
 )
+
 # COMMAND ----------
 
 # Load feature-engineered DataFrame
