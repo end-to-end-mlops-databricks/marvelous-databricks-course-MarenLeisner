@@ -1,13 +1,5 @@
 # Databricks notebook source
-# MAGIC %pip install ../housing_price-0.0.1-py3-none-any.whl
-
-# COMMAND ----------
-# MAGIC %restart_python
-
-# COMMAND ----------
-
 import time
-
 import requests
 import random
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -24,6 +16,7 @@ from databricks.sdk.runtime import dbutils
 
 from taxinyc.config import ProjectConfig
 from pyspark.sql import SparkSession
+
 # COMMAND ----------
 
 workspace = WorkspaceClient()
@@ -42,14 +35,14 @@ train_set = spark.table(f"{catalog_name}.{schema_name}.train_set_ma").toPandas()
 # COMMAND ----------
 
 workspace.serving_endpoints.create(
-    name="taxinyc-model-serving",
+    name="taxinyc-model-serving_ma",
     config=EndpointCoreConfigInput(
         served_entities=[
             ServedEntityInput(
-                entity_name=f"{catalog_name}.{schema_name}.nyctaximodel_pyfunc_ma",
+                entity_name=f"{catalog_name}.{schema_name}.nyctaxi_model_pyfunc_ma",
                 scale_to_zero_enabled=True,
                 workload_size="Small",
-                entity_version=6,
+                entity_version=1,
             )
         ],
     # Optional if only 1 entity is served
@@ -62,10 +55,7 @@ workspace.serving_endpoints.create(
     ),
 )
 
-# COMMAND ----------
 
-# MAGIC %md
-# MAGIC ## Call the endpoint
 # COMMAND ----------
 
 host = spark.conf.get("spark.databricks.workspaceUrl")
@@ -75,11 +65,6 @@ try:
 except AttributeError:
     # local/databricks connect way
     token = os.environ.get("DATABRICKS_TOKEN")
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ### Create sample request body
 
 # COMMAND ----------
 
@@ -99,7 +84,9 @@ Each body should be list of json with columns
 [{"trip_distance": }]
 """
 
+
 # COMMAND ----------
+
 start_time = time.time()
 
 model_serving_endpoint = (
@@ -118,14 +105,9 @@ print("Response status:", response.status_code)
 print("Reponse text:", response.text)
 print("Execution time:", execution_time, "seconds")
 
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ## Load Test
 
 # COMMAND ----------
 
-# Initialize variables
 model_serving_endpoint = (
     f"https://{host}/serving-endpoints/taxinyc-model-serving/invocations"
 )

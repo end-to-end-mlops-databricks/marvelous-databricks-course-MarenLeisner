@@ -1,4 +1,8 @@
 # Databricks notebook source
+# MAGIC %pip install ./taxinyc-0.0.1-py3-none-any.whl
+
+# COMMAND ----------
+
 import json
 
 import mlflow
@@ -35,6 +39,7 @@ mlflow_experiment_name = config.mlflow_experiment_name
 spark = SparkSession.builder.getOrCreate()
 
 # COMMAND ----------
+
 # Load training and testing sets from Databricks tables
 train_set_spark = spark.table(f"{catalog_name}.{schema_name}.train_set_ma")
 train_set = train_set_spark.toPandas()
@@ -53,6 +58,7 @@ pipeline = Pipeline(steps=[("regressor", LGBMRegressor(**parameters))])
 
 
 # COMMAND ----------
+
 mlflow.set_experiment(experiment_name=mlflow_experiment_name)
 git_sha = "bla"
 
@@ -123,23 +129,27 @@ with mlflow.start_run(tags={"branch": "week-2", "git_sha": f"{git_sha}"}) as run
     )
 
 # COMMAND ----------
+
 loaded_model = mlflow.pyfunc.load_model(f"runs:/{run_id}/pyfunc-taxi-fare-model")
 loaded_model.unwrap_python_model()
 
 # COMMAND ----------
+
 model_name = f"{catalog_name}.{schema_name}.taxi_fare_model_pyfunc"
 
 model_version = mlflow.register_model(
     model_uri=f"runs:/{run_id}/pyfunc-taxi-fare-model", name=model_name, tags={"git_sha": f"{git_sha}"}
 )
+
 # COMMAND ----------
 
 with open("model_version.json", "w") as json_file:
     json.dump(model_version.__dict__, json_file, indent=4)
 
 # COMMAND ----------
+
 model_version_alias = "the_best_model"
-client.set_registered_model_alias(model_name, model_version_alias, "1")
+client.set_registered_model_alias(model_name, model_version_alias, model_version.version)
 
 model_uri = f"models:/{model_name}@{model_version_alias}"
 model = mlflow.pyfunc.load_model(model_uri)
