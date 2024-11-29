@@ -1,3 +1,5 @@
+from pyspark.sql import SparkSession
+from pyspark.sql.types import *
 import pandas as pd
 import numpy as np
 from pyspark.sql.functions import current_timestamp, to_utc_timestamp
@@ -33,25 +35,39 @@ def create_synthetic_data(df, num_rows=100):
         elif isinstance(df[column].dtype, pd.CategoricalDtype) or isinstance(df[column].dtype, pd.StringDtype):
             synthetic_data[column] = np.random.choice(df[column].unique(), num_rows, 
                                                       p=df[column].value_counts(normalize=True))
-        elif pd.api.types.is_datetime64_any_dtype(df[column]) and column != config.id_col:
-            min_date, max_date = df[column].min(), df[column].max()
-            if min_date < max_date:
-                synthetic_data[column] = pd.to_datetime(
-                    # np.random.randint(min_date.value, max_date.value, num_rows)
-                    np.random.randint(0, 100, num_rows)
-                )
-            else:
-                synthetic_data[column] = [min_date] * num_rows
+        #elif pd.api.types.is_datetime64_any_dtype(df[column]) and column != config.id_col:
+        #    min_date, max_date = df[column].min(), df[column].max()
+        #    if min_date < max_date:
+        #        synthetic_data[column] = pd.to_datetime(
+        #            # np.random.randint(min_date.value, max_date.value, num_rows)
+        #            np.random.randint(0, 100, num_rows)
+        #        )
+        #    else:
+        #        synthetic_data[column] = [min_date] * num_rows
         else:
             synthetic_data[column] = np.random.choice(df[column], num_rows)
-    synthetic_data[config.id_col] = df[config.id_col]
+    #synthetic_data[config.id_col] = df[config.id_col]
 
     return synthetic_data
 
 # Create synthetic data
 synthetic_df = create_synthetic_data(combined_set)
 
-# spark.sql(f"DROP TABLE {catalog_name}.{schema_name}.source_data_nico")
+# Define the predefined schema
+predefined_schema = StructType([
+    StructField("tpep_pickup_datetime", TimestampType(), True),
+    StructField("tpep_dropoff_datetime", TimestampType(), True),
+    StructField("trip_distance", DoubleType(), True),
+    StructField("fare_amount", DoubleType(), True),
+    StructField("pickup_zip", IntegerType(), True),
+    StructField("dropoff_zip", IntegerType(), True),
+    StructField("update_timestamp_utc", TimestampType(), True),
+])
+
+if not spark.catalog.tableExists("sandbox.sb_adan.source_data_ma"):
+    # Create an empty DataFrame with the same columns and data types as synthetic_df
+    empty_df = spark.createDataFrame([], predefined_schema)
+    empty_df.write.saveAsTable("sandbox.sb_adan.source_data_ma")
 
 # fails when table has not been created yet
 try:
